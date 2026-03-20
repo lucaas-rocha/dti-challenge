@@ -25,29 +25,28 @@ app.get('/api/products', (req, res) => {
 // Cart listing (GET)
 app.get('/api/cart', (req, res) => {
     const query = `
-        SELECT cart.id as cart_id, cart.quantity, products.*
+        SELECT cart.id as cart_id, cart.quantity, cart.selected_option, products.*
         FROM cart
         JOIN products ON cart.product_id = products.id
     `;
     db.all(query, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Error searching for the cart' });
+        if (err) return res.status(500).json({ error: 'Error retrieving cart' });
         res.json(rows);
     });
 });
 
 // Adding Product in Cart (POST)
 app.post('/api/cart', (req, res) => {
-    const { product_id } = req.body;
+    const { product_id, selected_option } = req.body; 
+    const optionToSave = selected_option || 'Default'; // If no option is sent, save as "Default"
 
     if (!product_id) {
         return res.status(400).json({ error: 'Inform product ID' });
     }
 
-    // Just verifying if the product is already in the cart
-    db.get("SELECT * FROM cart WHERE product_id = ?", [product_id], (err, row) => {
+    db.get("SELECT * FROM cart WHERE product_id = ? AND selected_option = ?", [product_id, optionToSave], (err, row) => {
         if (err) return res.status(500).json({ error: 'Database error' });
 
-        // max quantity of 10
         if (row) {
             const newQuantity = row.quantity + 1;
             if (newQuantity > 10) {
@@ -59,7 +58,7 @@ app.post('/api/cart', (req, res) => {
                 res.json({ message: 'Quantity updated successfully', cart_id: row.id, quantity: newQuantity });
             });
         } else {
-            db.run("INSERT INTO cart (product_id, quantity) VALUES (?, 1)", [product_id], function(err) {
+            db.run("INSERT INTO cart (product_id, selected_option, quantity) VALUES (?, ?, 1)", [product_id, optionToSave], function(err) {
                 if (err) return res.status(500).json({ error: 'Error adding product to cart' });
                 res.status(201).json({ message: 'Product added to cart', cart_id: this.lastID, quantity: 1 });
             });
