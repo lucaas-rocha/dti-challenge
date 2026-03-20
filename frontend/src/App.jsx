@@ -6,6 +6,12 @@ function App() {
   const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [optionModal, setOptionModal] = useState({
+    isOpen: false,
+    product: null,
+    tempOption: '' 
+  });
 
   useEffect(() => {
     fetchProducts()
@@ -26,15 +32,35 @@ function App() {
       .catch(err => console.error("Error fetching cart:", err))
   }
 
-  const addToCart = (productId) => {
+  const handleAddButtonClick = (product) => {
+    const optionsArray = JSON.parse(product.options || '[]');
+    
+    // if product has options, open modal. Otherwise, add directly to cart with "Default" option
+    if (optionsArray.length > 0) {
+      setOptionModal({
+        isOpen: true,
+        product: product,
+        tempOption: optionsArray[0]
+      });
+    } else {
+      performAddToCart(product.id, 'Default');
+    }
+  }
+  const handleConfirmOption = () => {
+    if (optionModal.product && optionModal.tempOption) {
+      performAddToCart(optionModal.product.id, optionModal.tempOption);
+      setOptionModal({ isOpen: false, product: null, tempOption: '' });
+    }
+  }
+
+  const performAddToCart = (productId, chosenOption) => {
     fetch('http://localhost:3001/api/cart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId })
+      body: JSON.stringify({ product_id: productId, selected_option: chosenOption })
     })
       .then(res => res.json())
       .then(data => {
-        // Backend validation error (min 10,max 10)
         if (data.error) {
           alert(data.error)
         } else {
@@ -42,10 +68,11 @@ function App() {
           fetchCart()
         }
       })
+      .catch(err => console.error("Error adding to cart:", err));
   }
 
   const updateQuantity = (cartId, quantity) => {
-    // Frontend validation for quantity (min 1, max 10)
+    // Validate quantity before sending the request
     if (quantity < 1 || quantity > 10) {
       alert("Quantity must be between 1 and 10")
       return
@@ -71,11 +98,15 @@ function App() {
       .then(data => {
         alert(data.message)
         fetchCart()
-        setIsCartOpen(false) // Redirect user to the store view
+        setIsCartOpen(false) 
       })
   }
 
-  // Automatic calculations for the Cart view
+  // filter products based on search term (case-insensitive)
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
   const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
@@ -91,18 +122,33 @@ function App() {
       <main>
         {!isCartOpen ? (
           <div>
-            <h2>Our Products</h2>
+            {/* 4. SEÇÃO DE PRODUTOS PREPARADA PARA MÚLTIPLOS ITENS */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h2>Our Products</h2>
+              {/* BARRA DE BUSCA (Search) */}
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                className="search-input"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ padding: '10px', width: '250px', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+            </div>
+
             <div className="products-grid">
-              {products.length === 0 ? (
-                <p>Loading Products...</p>
+              {filteredProducts.length === 0 ? (
+                <p>No Products found.</p>
               ) : (
-                products.map(product => (
+                filteredProducts.map(product => (
                   <div key={product.id} className="product-card">
                     <img src={product.image} alt={product.name} />
                     <h3>{product.name}</h3>
                     <p className="description">{product.description}</p>
                     <p className="price">$ {product.price.toFixed(2)}</p>
-                    <button className="add-button" onClick={() => addToCart(product.id)}>
+                    
+                    {/* Botão agora chama a lógica de verificação de opções */}
+                    <button className="add-button" onClick={() => handleAddButtonClick(product)}>
                       Add to Cart
                     </button>
                   </div>
@@ -121,7 +167,15 @@ function App() {
                   <div key={item.cart_id} className="cart-item">
                     <img src={item.image} alt={item.name} width="50" style={{ borderRadius: '4px' }} />
                     <div className="cart-item-info">
-                      <h4>{item.name}</h4>
+                      <h4>
+                        {item.name}
+                        {item.selected_option && item.selected_option !== 'Default' && (
+                          <span style={{color: '#666', fontSize: '0.9em', marginLeft: '5px'}}>
+                            ({item.selected_option})
+                          </span>
+                        )}
+                      </h4>
+                      
                       <p>Subtotal: $ {(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                     <div className="cart-actions">
@@ -143,6 +197,36 @@ function App() {
           </div>
         )}
       </main>
+      {optionModal.isOpen && optionModal.product && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Select Option</h3>
+            <p>Please select an option for <strong>{optionModal.product.name}</strong>:</p>
+            
+            <select 
+              className="options-select"
+              value={optionModal.tempOption}
+              onChange={(e) => setOptionModal({...optionModal, tempOption: e.target.value})}
+            >
+              {JSON.parse(optionModal.product.options).map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+            
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn" 
+                onClick={() => setOptionModal({ isOpen: false, product: null, tempOption: '' })}
+              >
+                Cancel
+              </button>
+              <button className="confirm-btn" onClick={handleConfirmOption}>
+                Confirm Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
