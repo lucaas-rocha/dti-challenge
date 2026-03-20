@@ -80,3 +80,77 @@ header {
 .add-button:hover {
   background-color: #218838;
 }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-toggle-btn {
+  background-color: #ffc107;
+  color: #333;
+  border: none;
+  padding: 12px 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cart-toggle-btn:hover {
+  background-color: #e0a800;
+}
+
+.cart-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.cart-actions button {
+  padding: 5px 12px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.remove-btn {
+  background-color: #dc3545 !important;
+  color: white;
+  border: none !important;
+  margin-left: 15px;
+}
+
+.cart-summary {
+  margin-top: 30px;
+  text-align: right;
+  border-top: 2px solid #eee;
+  padding-top: 20px;
+}
+
+.checkout-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.checkout-btn:hover {
+  background-color: #0056b3;
+}
