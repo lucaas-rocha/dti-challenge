@@ -3,6 +3,10 @@ import './App.css'
 
 import Toast from './components/Toast'
 import CheckoutSuccess from './components/CheckoutSuccess'
+import Header from './components/Header'
+import ProductCard from './components/ProductCard'
+import Cart from './components/Cart'
+import OptionsModal from './components/OptionsModal'
 
 function App() {
 
@@ -106,6 +110,10 @@ function App() {
   }
 
   const checkout = () => {
+    if (cart.length === 0) {
+      showToast("Your cart is empty!", 'error');
+      return;
+    }
     fetch('http://localhost:3001/api/checkout', { method: 'POST' })
       .then(res => res.json())
       .then(data => {
@@ -140,20 +148,13 @@ function App() {
         />
       )}
 
-      <header>
-        <h1>My Shop - Technical Test</h1>
-        <button className="cart-toggle-btn" onClick={() => setIsCartOpen(!isCartOpen)}>
-          {isCartOpen ? 'Back to Store' : `🛒 Cart (${totalItems})`}
-        </button>
-      </header>
+      <Header isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} totalItems={totalItems} />
 
       <main>
         {!isCartOpen ? (
           <div>
-            {/* 4. SEÇÃO DE PRODUTOS PREPARADA PARA MÚLTIPLOS ITENS */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
               <h2>Our Products</h2>
-              {/* BARRA DE BUSCA (Search) */}
               <input 
                 type="text" 
                 placeholder="Search products..." 
@@ -169,91 +170,30 @@ function App() {
                 <p>No Products found.</p>
               ) : (
                 filteredProducts.map(product => (
-                  <div key={product.id} className="product-card">
-                    <img src={product.image} alt={product.name} />
-                    <h3>{product.name}</h3>
-                    <p className="description">{product.description}</p>
-                    <p className="price">$ {product.price.toFixed(2)}</p>
-                    
-                    {/* Botão agora chama a lógica de verificação de opções */}
-                    <button className="add-button" onClick={() => handleAddButtonClick(product)}>
-                      Add to Cart
-                    </button>
+                  <div key={product.id}>
+                    <ProductCard product={product} onAddToCart={handleAddButtonClick} />
                   </div>
                 ))
               )}
             </div>
           </div>
         ) : (
-          <div className="cart-section">
-            <h2>Your Cart</h2>
-            {cart.length === 0 ? (
-              <p>Your cart is empty.</p>
-            ) : (
-              <div>
-                {cart.map(item => (
-                  <div key={item.cart_id} className="cart-item">
-                    <img src={item.image} alt={item.name} width="50" style={{ borderRadius: '4px' }} />
-                    <div className="cart-item-info">
-                      <h4>
-                        {item.name}
-                        {item.selected_option && item.selected_option !== 'Default' && (
-                          <span style={{color: '#666', fontSize: '0.9em', marginLeft: '5px'}}>
-                            ({item.selected_option})
-                          </span>
-                        )}
-                      </h4>
-                      
-                      <p>Subtotal: $ {(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                    <div className="cart-actions">
-                      <button onClick={() => updateQuantity(item.cart_id, item.quantity - 1)}>-</button>
-                      <span style={{ fontWeight: 'bold', margin: '0 10px' }}>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.cart_id, item.quantity + 1)}>+</button>
-
-                      <button className="remove-btn" onClick={() => removeFromCart(item.cart_id)}>Remove</button>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="cart-summary">
-                  <h3>Grand Total: $ {grandTotal.toFixed(2)}</h3>
-                  <button className="checkout-btn" onClick={checkout}>Checkout</button>
-                </div>
-              </div>
-            )}
-          </div>
+          <Cart 
+            cart={cart} 
+            updateQuantity={updateQuantity} 
+            removeFromCart={removeFromCart} 
+            checkout={checkout} 
+            grandTotal={grandTotal} 
+          />
         )}
       </main>
+      
       {optionModal.isOpen && optionModal.product && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Select Option</h3>
-            <p>Please select an option for <strong>{optionModal.product.name}</strong>:</p>
-            
-            <select 
-              className="options-select"
-              value={optionModal.tempOption}
-              onChange={(e) => setOptionModal({...optionModal, tempOption: e.target.value})}
-            >
-              {JSON.parse(optionModal.product.options).map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            
-            <div className="modal-actions">
-              <button 
-                className="cancel-btn" 
-                onClick={() => setOptionModal({ isOpen: false, product: null, tempOption: '' })}
-              >
-                Cancel
-              </button>
-              <button className="confirm-btn" onClick={handleConfirmOption}>
-                Confirm Add
-              </button>
-            </div>
-          </div>
-        </div>
+        <OptionsModal 
+          optionModal={optionModal} 
+          setOptionModal={setOptionModal} 
+          handleConfirmOption={handleConfirmOption} 
+        />
       )}
     </div>
   )
