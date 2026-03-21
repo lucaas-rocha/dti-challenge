@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+import Toast from './components/Toast'
+import CheckoutSuccess from './components/CheckoutSuccess'
+
 function App() {
 
   const [products, setProducts] = useState([])
@@ -12,6 +15,13 @@ function App() {
     product: null,
     tempOption: '' 
   });
+  const [toast, setToast] = useState({ visible: false, message: '', type: '' })
+  const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(false)
+
+  // Toast function to show messages to the user
+  const showToast = (message, type) => {
+    setToast({ visible: true, message, type })
+  }
 
   useEffect(() => {
     fetchProducts()
@@ -62,9 +72,9 @@ function App() {
       .then(res => res.json())
       .then(data => {
         if (data.error) {
-          alert(data.error)
+          showToast(data.error, 'error')
         } else {
-          alert("Product added to cart!")
+          showToast("Product added to cart!", 'success')
           fetchCart()
         }
       })
@@ -74,7 +84,7 @@ function App() {
   const updateQuantity = (cartId, quantity) => {
     // Validate quantity before sending the request
     if (quantity < 1 || quantity > 10) {
-      alert("Quantity must be between 1 and 10")
+      showToast("Quantity must be between 1 and 10", 'error')
       return
     }
     fetch(`http://localhost:3001/api/cart/${cartId}`, {
@@ -89,17 +99,24 @@ function App() {
     fetch(`http://localhost:3001/api/cart/${cartId}`, {
       method: 'DELETE'
     })
-      .then(() => fetchCart())
+      .then(() => {
+        fetchCart();
+        showToast("Product removed from cart", "error"); 
+      })
   }
 
   const checkout = () => {
     fetch('http://localhost:3001/api/checkout', { method: 'POST' })
       .then(res => res.json())
       .then(data => {
-        alert(data.message)
         fetchCart()
-        setIsCartOpen(false) 
+        setIsCartOpen(false)
+        setShowCheckoutSuccess(true)
       })
+  }
+
+  const handleBackToStore = () => {
+    setShowCheckoutSuccess(false)
   }
 
   // filter products based on search term (case-insensitive)
@@ -112,6 +129,17 @@ function App() {
 
   return (
     <div className="container">
+
+      {showCheckoutSuccess && <CheckoutSuccess onBackToStore={handleBackToStore} />}
+
+      {toast.visible && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast({ ...toast, visible: false })} 
+        />
+      )}
+
       <header>
         <h1>My Shop - Technical Test</h1>
         <button className="cart-toggle-btn" onClick={() => setIsCartOpen(!isCartOpen)}>

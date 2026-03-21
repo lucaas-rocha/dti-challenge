@@ -251,3 +251,70 @@ header {
   cursor: pointer;
   font-weight: bold;
 }
+
+.toast-message {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 15px 25px;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.toast-message.success {
+  background-color: #28a745; 
+}
+
+.toast-message.error {
+  background-color: #dc3545; 
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.toast-message.fade-out {
+  animation: slideOutDown 0.3s forwards;
+}
+
+@keyframes slideOutDown {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100%); opacity: 0; }
+}
+
+.checkout-success-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(245, 245, 245, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.checkout-success-card {
+  background: white;
+  padding: 50px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  max-width: 500px;
+  animation: modalFadeIn 0.4s ease;
+}
+
+.checkout-success-card h2 {
+  color: #28a745;
+  margin-bottom: 15px;
+}
+
+.checkout-success-card p {
+  color: #666;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
