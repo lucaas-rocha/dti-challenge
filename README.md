@@ -25,6 +25,12 @@ In addition to meeting all the mandatory requirements, this project includes ext
     * **Componentized Front-end:** Division of the main file into components (`Header`, `Cart`, `ProductCard`, `OptionsModal`, `CheckoutSuccess`, `Toast`).
     * **MVC Back-end:** Refactoring of the monolithic server into a structure of routes and controllers separated by domain (`productController` and `cartController`).
 
+5.  **Responsive Layout:**
+    * The application is fully responsive, adapting seamlessly to mobile and desktop screens using CSS Flexbox, Grid, and media queries.
+
+6.  **Native Cart Persistence (Beyond localStorage):**
+    * While the challenge suggested using localStorage for cart persistence, I opted for a more robust approach. The cart state is persisted directly in the Back-end using the SQLite database. This ensures the cart survives page refreshes and session restarts natively through the API.
+
 ---
 
 ## Technologies
@@ -84,7 +90,7 @@ The project is divided into two main folders. You will need to run the Back-end 
 For the API, I opted for Node.js over .NET since it is the technology I am currently most used to working with, allowing me to deliver a solid result within the deadline. Seeking to apply the concepts of separation of concerns (SOLID and MVC) that I have been improving in my Computer Engineering course at CEFET-MG, I decided to structure the Back-end in layers. The test demanded SQLite as the database, which made evaluation easier for the recruiter as it is a zero-config file-based database, and does not require the evaluator to spin up Docker containers or install databases on their own machine to test the application.
 
 ### Componentized Front-end
-I started developing the Front-end to ensure the MVP (Minimum Viable Product) integration as quickly as possible. After ensuring the stability of the API calls, I applied refactoring techniques to extract the visual logic into reusable components, ensuring that the `App.jsx` file acted only as a state orchestrator.
+I started developing the Front-end ensuring to finish the MVP (Minimum Viable Product) integration as quickly as possible. After ensuring the stability of the API calls, I applied refactoring techniques to extract the visual logic into reusable components, ensuring that the `App.jsx` file acted only as a state orchestrator.
 
 ### Automatic Seeding
 As in past simulation projects, I opted to perform automatic seeding in the `database.js` file. If the table is empty, the system pre-loads 6 varied products (some with options, others without), allowing the application to be ready for immediate testing.
@@ -93,7 +99,7 @@ As in past simulation projects, I opted to perform automatic seeding in the `dat
 
 ## AI Collaboration History
 
-I used Generative Artificial Intelligence (LLM) as a pair programming partner to accelerate development, focus on architecture, and automate boilerplate generation. AI also played a role in the initial app.jsx development (mainly html tags and css), generating a well-structured base so I could add functionalities later.
+I used Generative Artificial Intelligence (LLM) as a pair programming partner to accelerate development, focus on architecture, and automate boilerplate generation. AI also played a role in the initial `App.jsx` development (mainly html tags and css), generating a well-structured base so I could add functionalities later.
 
 Below are examples of the prompt flows used:
 
